@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Türkiye Canlı TV</title>
+    
+    <!-- Tailwind CSS (Slate Dark Theme) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        // Using slate palette for a modern, native-app feel
+                        app: {
+                            bg: '#0f172a',      // slate-900
+                            card: '#1e293b',    // slate-800
+                            border: '#334155',  // slate-700
+                            hover: '#475569',   // slate-600
+                            text: '#f8fafc',    // slate-50
+                            muted: '#94a3b8',   // slate-400
+                            accent: '#ef4444',  // red-500
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- HLS.js for Live Streams -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <style>
+        /* Base optimizations for mobile apps */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Hide scrollbar for horizontal categories */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Active Channel Pulse Animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .live-ping::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            display: block;
+            width: 100%; height: 100%;
+            background-color: #ef4444;
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-app-bg text-app-text font-sans h-screen flex flex-col overflow-hidden selection:bg-app-accent selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-app-card border-b border-app-border z-20 flex-none shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-app-accent text-white p-1.5 rounded-lg shadow-md shadow-red-500/20">
+                    <i class="ph-fill ph-television text-xl"></i>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight hidden sm:block">Canlı TV</h1>
+            </div>
+            
+            <div class="flex-1 max-w-md relative">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-app-muted"></i>
+                <input type="text" id="searchInput" placeholder="Kanal ara..." 
+                    class="w-full bg-app-bg border border-app-border rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-app-accent focus:ring-1 focus:ring-app-accent transition-colors text-app-text placeholder-app-muted">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Area -->
+    <main class="flex-1 max-w-7xl mx-auto w-full flex flex-col lg:flex-row p-2 sm:p-4 gap-4 overflow-hidden min-h-0">
+        
+        <!-- Video Player Section (Top on mobile, Left on desktop) -->
+        <section class="w-full lg:w-2/3 flex flex-col gap-3 flex-none lg:flex-auto">
+            
+            <!-- Player Container -->
+            <div class="relative w-full bg-black rounded-xl overflow-hidden shadow-2xl aspect-video border border-app-border group flex-none">
+                <!-- Video Element: playsinline crucial for iOS/Capacitor -->
+                <video id="videoPlayer" class="w-full h-full object-contain" playsinline controls></video>
+                
+                <!-- Initial Placeholder -->
+                <div id="playerPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-app-bg/95 z-10 transition-opacity duration-300">
+                    <div class="bg-app-card p-4 rounded-full mb-3 shadow-lg border border-app-border">
+                        <i class="ph-fill ph-play-circle text-4xl text-app-accent opacity-80"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold text-app-text">Kanal Seçin</h2>
+                    <p class="text-app-muted text-xs mt-1 text-center px-4">Yayın izlemek için listeden bir kanal seçiniz.</p>
+                </div>
+
+                <!-- Error Overlay -->
+                <div id="errorOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-app-bg/95 z-20 hidden backdrop-blur-sm">
+                    <i class="ph-fill ph-warning-circle text-4xl text-yellow-500 mb-2"></i>
+                    <h2 class="text-base font-semibold text-white mb-1">Yayın Hatası</h2>
+                    <p class="text-app-muted text-xs text-center max-w-xs px-4 mb-4" id="errorText">Bu kanalın yayınına şu anda ulaşılamıyor veya CORS engeline takıldı.</p>
+                    <button onclick="hideError()" class="px-4 py-1.5 bg-app-card hover:bg-app-hover rounded text-sm font-medium transition-colors border border-app-border">Kapat</button>
+                </div>
+            </div>
+
+            <!-- Active Channel Details -->
+            <div class="bg-app-card border border-app-border rounded-xl p-3 flex justify-between items-center shadow-sm flex-none">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div id="activeIcon" class="w-10 h-10 bg-app-bg rounded-lg flex items-center justify-center overflow-hidden border border-app-border shrink-0">
+                        <i class="ph ph-television text-xl text-app-muted"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h2 id="activeName" class="text-base font-bold text-app-text truncate leading-tight">Yayın Yok</h2>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <div class="relative flex h-2 w-2">
+                                <span id="livePing" class="absolute inline-flex h-full w-full rounded-full bg-app-muted opacity-75"></span>
+                                <span id="liveDot" class="relative inline-flex rounded-full h-2 w-2 bg-app-muted"></span>
+                            </div>
+                            <p id="activeCategory" class="text-[10px] font-medium text-app-muted uppercase tracking-wider truncate">Kategori</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleFullscreen()" class="shrink-0 ml-2 bg-app-bg hover:bg-app-hover border border-app-border p-2 rounded-lg transition-colors text-app-text">
+                    <i class="ph ph-corners-out text-lg"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Channel List Section (Bottom on mobile, Right on desktop) -->
+        <section class="w-full lg:w-1/3 flex flex-col bg-app-card border border-app-border rounded-xl overflow-hidden shadow-md flex-1 min-h-0">
+            
+            <!-- Filters & Counters -->
+            <div class="p-3 border-b border-app-border flex-none bg-app-card z-10">
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="text-sm font-semibold text-app-text flex items-center gap-1.5">
+                        <i class="ph-fill ph-list-bullets text-app-accent"></i> Kanallar
+                    </h3>
+                    <span id="channelCount" class="text-[10px] bg-app-bg px-2 py-0.5 rounded text-app-muted font-medium border border-app-border">0</span>
+                </div>
+                
+                <!-- Category Tabs (Horizontal Scroll) -->
+                <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1" id="categoryTabs">
+                    <!-- Tabs rendered via JS -->
+                </div>
+            </div>
+
+            <!-- Scrollable List -->
+            <div id="channelList" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1 relative">
+                <!-- Loading State -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-app-muted gap-2">
+                    <i class="ph ph-spinner-gap animate-spin text-2xl"></i>
+                    <p class="text-xs">Kanallar yükleniyor...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            allChannels: [],
+            filteredChannels: [],
+            activeCategory: 'Tümü',
+            searchQuery: '',
+            currentUrl: null,
+            hls: null
+        };
+
+        const categories = ['Tümü', 'Popüler', 'TRT', 'Haber', 'Spor', 'Yerel', 'Diğer'];
+        
+        // Define Popular Channels (These get sorted to the top)
+        const popularList = [
+            'TRT 1', 'ATV', 'Kanal D', 'Show TV', 'Star TV', 'TV8', 'NOW', 
+            'NTV', 'Habertürk', 'CNN Türk', 'A Haber', 'TRT Haber'
+        ];
+
+        // Hardcoded Official & Reliable TRT Streams (Base state)
+        const trtChannels = [
+            { name: "TRT 1", group: "TRT", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/TRT_1_logo_2021.svg/512px-TRT_1_logo_2021.svg.png", url: "https://tv-trt1.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Haber", group: "Haber", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/TRT_Haber_logo.svg/512px-TRT_Haber_logo.svg.png", url: "https://tv-trthaber.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Spor", group: "Spor", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/TRT_Spor_logo_2021.svg/512px-TRT_Spor_logo_2021.svg.png", url: "https://tv-trtspor1.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Spor Yıldız", group: "Spor", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/TRT_Spor_Yildiz_logo.svg/512px-TRT_Spor_Yildiz_logo.svg.png", url: "https://tv-trtspor2.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Belgesel", group: "TRT", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/TRT_Belgesel_logo_2021.svg/512px-TRT_Belgesel_logo_2021.svg.png", url: "https://tv-trtbelgesel.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Çocuk", group: "TRT", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/TRT_Çocuk_logo_2021.svg/512px-TRT_Çocuk_logo_2021.svg.png", url: "https://tv-trtcocuk.live.trt.com.tr/master.m3u8" },
+            { name: "TRT Müzik", group: "TRT", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/TRT_Müzik_logo_2021.svg/512px-TRT_Müzik_logo_2021.svg.png", url: "https://tv-trtmuzik.live.trt.com.tr/master.m3u8" }
+        ];
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initUI();
+            setupPlayerListeners();
+            fetchChannels();
+        });
+
+        function initUI() {
+            renderTabs();
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.toLowerCase().trim();
+                applyFilters();
+            });
+        }
+
+        // --- Data Fetching & Parsing ---
+        async function fetchChannels() {
+            state.allChannels = [...trtChannels]; // Start with base TRT
+            renderList(state.allChannels); // Initial fast render
+
+            try {
+                const res = await fetch('https://iptv-org.github.io/iptv/countries/tr.m3u');
+                if (!res.ok) throw new Error("M3U fetch failed");
+                const m3uData = await res.text();
+                parseAndMergeM3U(m3uData);
+            } catch (err) {
+                console.error("IPTV fetch error:", err);
+                // Fail gracefully, keep using hardcoded TRT channels
+            }
+        }
+
+        function parseAndMergeM3U(data) {
+            const lines = data.split('\n');
+            let current = null;
+            let newChannels = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    current = {};
+                    
+                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                    current.logo = logoMatch ? logoMatch[1] : '';
+
+                    const groupMatch = line.match(/group-title="([^"]*)"/);
+                    const rawGroup = groupMatch ? groupMatch[1] : '';
+                    
+                    const nameSplit = line.split(',');
+                    current.name = nameSplit[nameSplit.length - 1].trim();
+                    current.group = categorize(current.name, rawGroup);
+
+                } else if (line && !line.startsWith('#') && current && current.name) {
+                    current.url = line;
+                    
+                    // VALIDATION: Only keep valid http/https and m3u8 streams
+                    if (current.url.startsWith('http') && current.url.includes('.m3u8')) {
+                        // DEDUPLICATION: Prevent overwriting official TRT ones
+                        const exists = state.allChannels.some(c => c.name.toLowerCase() === current.name.toLowerCase());
+                        if (!exists) {
+                            newChannels.push(current);
+                        }
+                    }
+                    current = null;
+                }
+            }
+
+            state.allChannels = [...state.allChannels, ...newChannels];
+            sortChannels();
+            applyFilters();
+        }
+
+        function categorize(name, rawGroup) {
+            const n = name.toLowerCase();
+            const g = rawGroup.toLowerCase();
+            if (n.includes('trt')) return 'TRT';
+            if (n.includes('haber') || g.includes('news')) return 'Haber';
+            if (n.includes('spor') || g.includes('sport')) return 'Spor';
+            if (g.includes('local') || g.includes('regional')) return 'Yerel';
+            return 'Diğer';
+        }
+
+        function sortChannels() {
+            state.allChannels.sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                
+                let idxA = popularList.findIndex(p => aName.includes(p.toLowerCase()));
+                let idxB = popularList.findIndex(p => bName.includes(p.toLowerCase()));
+                
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                
+                // Alphabetical fallback for the rest
+                return aName.localeCompare(bName, 'tr');
+            });
+        }
+
+        // --- Filtering & Rendering ---
+        function setCategory(cat) {
+            state.activeCategory = cat;
+            renderTabs();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            state.filteredChannels = state.allChannels.filter(c => {
+                const matchSearch = c.name.toLowerCase().includes(state.searchQuery);
+                let matchCat = false;
+                
+                if (state.activeCategory === 'Tümü') matchCat = true;
+                else if (state.activeCategory === 'Popüler') {
+                    matchCat = popularList.some(p => c.name.toLowerCase().includes(p.toLowerCase()));
+                } 
+                else matchCat = (c.group === state.activeCategory);
+                
+                return matchSearch && matchCat;
+            });
+            renderList(state.filteredChannels);
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('categoryTabs');
+            container.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.innerText = cat;
+                btn.onclick = () => setCategory(cat);
+                
+                const isActive = cat === state.activeCategory;
+                btn.className = `px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${
+                    isActive 
+                    ? 'bg-app-accent text-white border-app-accent shadow-sm' 
+                    : 'bg-app-bg text-app-muted border-app-border hover:bg-app-hover hover:text-app-text'
+                }`;
+                container.appendChild(btn);
+            });
+        }
+
+        function renderList(channels) {
+            const listEl = document.getElementById('channelList');
+            document.getElementById('channelCount').innerText = channels.length;
+            listEl.innerHTML = '';
+
+            if (channels.length === 0) {
+                listEl.innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-app-muted">
+                        <i class="ph ph-magnifying-glass text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">Sonuç bulunamadı</p>
+                    </div>`;
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            channels.forEach(channel => {
+                const isPlaying = state.currentUrl === channel.url;
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center gap-3 p-2 rounded-xl transition-colors border text-left ${
+                    isPlaying 
+                    ? 'bg-app-hover border-app-border/80 shadow-inner' 
+                    : 'bg-transparent border-transparent hover:bg-app-hover/50'
+                }`;
+                btn.onclick = () => playChannel(channel);
+
+                // Safe logo load with fallback
+                const logoHtml = channel.logo 
+                    ? `<img src="${channel.logo}" loading="lazy" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'ph ph-television text-lg text-app-muted\\'></i>';">`
+                    : `<i class="ph ph-television text-lg text-app-muted"></i>`;
+
+                btn.innerHTML = `
+                    <div class="w-10 h-10 bg-app-bg rounded-lg flex items-center justify-center overflow-hidden border border-app-border shrink-0 p-1">
+                        ${logoHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-semibold truncate ${isPlaying ? 'text-app-accent' : 'text-app-text'}">${channel.name}</h4>
+                        <p class="text-[10px] text-app-muted uppercase truncate">${channel.group}</p>
+                    </div>
+                    ${isPlaying ? `<div class="shrink-0 w-6 h-6 rounded-full bg-app-accent/20 flex items-center justify-center"><i class="ph-fill ph-waveform text-app-accent text-xs"></i></div>` : ''}
+                `;
+                fragment.appendChild(btn);
+            });
+            listEl.appendChild(fragment);
+        }
+
+        // --- Video Player Logic ---
+        function setupPlayerListeners() {
+            const video = document.getElementById('videoPlayer');
+            const placeholder = document.getElementById('playerPlaceholder');
+            const dot = document.getElementById('liveDot');
+            const ping = document.getElementById('livePing');
+
+            video.addEventListener('playing', () => {
+                placeholder.style.opacity = '0';
+                setTimeout(() => placeholder.style.display = 'none', 300);
+                dot.classList.replace('bg-app-muted', 'bg-app-accent');
+                ping.classList.add('live-ping');
+                hideError();
+            });
+
+            video.addEventListener('waiting', () => {
+                // Buffer state handling can be added here
+            });
+        }
+
+        function playChannel(channel) {
+            const video = document.getElementById('videoPlayer');
+            state.currentUrl = channel.url;
+            hideError();
+
+            // Update Meta UI
+            document.getElementById('activeName').innerText = channel.name;
+            document.getElementById('activeCategory').innerText = channel.group;
+            const iconDiv = document.getElementById('activeIcon');
+            if (channel.logo) {
+                iconDiv.innerHTML = `<img src="${channel.logo}" class="w-full h-full object-contain p-1" onerror="this.onerror=null; this.innerHTML='<i class=\\'ph ph-television text-xl text-app-muted\\'></i>';">`;
+            } else {
+                iconDiv.innerHTML = `<i class="ph ph-television text-xl text-app-muted"></i>`;
+            }
+
+            // Reset indicators
+            document.getElementById('liveDot').classList.replace('bg-app-accent', 'bg-app-muted');
+            document.getElementById('livePing').classList.remove('live-ping');
+            document.getElementById('playerPlaceholder').style.display = 'none';
+
+            // Refresh list to show active state styles
+            renderList(state.filteredChannels);
+
+            // HLS Setup
+            if (Hls.isSupported()) {
+                if (state.hls) state.hls.destroy();
+                
+                state.hls = new Hls({
+                    maxBufferLength: 30,
+                    liveSyncDurationCount: 3,
+                    manifestLoadingTimeOut: 10000
+                });
+                
+                state.hls.loadSource(channel.url);
+                state.hls.attachMedia(video);
+                
+                state.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().catch(e => console.warn("Autoplay blocked:", e));
+                });
+
+                state.hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.error("HLS Network Error. Trying to recover...");
+                                state.hls.startLoad(); // Auto recover attempt
+                                // If it still fails, show error overlay after a delay
+                                setTimeout(() => {
+                                    if(video.paused) showError("Bağlantı hatası veya yayın geçici olarak kapalı.");
+                                }, 3000);
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.error("HLS Media Error. Recovering...");
+                                state.hls.recoverMediaError();
+                                break;
+                            default:
+                                state.hls.destroy();
+                                showError("Yayın formatı desteklenmiyor.");
+                                break;
+                        }
+                    }
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native Safari / iOS Webview fallback
+                video.src = channel.url;
+                video.addEventListener('loadedmetadata', () => {
+                    video.play().catch(e => console.warn(e));
+                });
+            } else {
+                showError("Cihazınız HLS canlı yayın formatını desteklemiyor.");
+            }
+        }
+
+        // --- Utility ---
+        function showError(msg) {
+            document.getElementById('errorOverlay').classList.remove('hidden');
+            document.getElementById('errorText').innerText = msg;
+            document.getElementById('liveDot').classList.replace('bg-app-accent', 'bg-app-muted');
+            document.getElementById('livePing').classList.remove('live-ping');
+        }
+
+        function hideError() {
+            document.getElementById('errorOverlay').classList.add('hidden');
+        }
+
+        function toggleFullscreen() {
+            const video = document.getElementById('videoPlayer');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (video.requestFullscreen) video.requestFullscreen();
+                else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
