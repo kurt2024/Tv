@@ -24,7 +24,8 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Custom scrollbar for channel list */
+        /* Custom scrollbar for 
+channel list */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -40,19 +41,22 @@
         }
     </style>
 </head>
-<body class="bg-darker text-slate-100 font-sans min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
+<body class="bg-darker 
+text-slate-100 font-sans min-h-screen flex flex-col selection:bg-red-600 selection:text-white">
 
     <!-- Header -->
     <header class="bg-darkcard border-b border-slate-800/80 sticky top-0 z-50 backdrop-blur-md bg-opacity-90 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-                <div class="flex items-center gap-3">
+                <div class="flex 
+items-center gap-3">
                     <div class="bg-gradient-to-tr from-red-600 to-rose-500 text-white p-2.5 rounded-xl font-bold shadow-lg shadow-red-600/30 flex items-center justify-center w-10 h-10">
                         <i class="fa-solid fa-tv text-lg"></i>
                     </div>
                     <div>
                         <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                            Türkiye Canlı TV <span class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-medium">Yerel & Ulusal</span>
+                            Türkiye Canlı TV <span class="text-xs bg-red-500/10 text-red-400 border 
+border-red-500/20 px-2 py-0.5 rounded-full font-medium">Yerel & Ulusal</span>
                         </h1>
                         <p class="text-xs text-slate-400">Tek tıkla reklamsız, kesintisiz canlı yayın keyfi</p>
                     </div>
@@ -69,11 +73,13 @@
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                         <i class="fa-solid fa-magnifying-glass text-sm"></i>
                     </span>
-                    <input type="text" id="searchInput" placeholder="Kanal veya şehir ara (Örn: Aksu, Bursa, Show...)" 
+                    <input type="text" id="searchInput" 
+placeholder="Kanal veya şehir ara (Örn: Aksu, Bursa, Show...)" 
                         class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
                 </div>
                 <div class="hidden sm:flex bg-slate-900 border border-slate-700/80 rounded-xl p-1 shrink-0">
-                    <button onclick="filterCategory('all')" id="cat-all" class="category-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white transition shadow">Tümü</button>
+                    <button onclick="filterCategory('all')" id="cat-all" class="category-btn 
+px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white transition shadow">Tümü</button>
                     <button onclick="filterCategory('yerel')" id="cat-yerel" class="category-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">Yerel</button>
                     <button onclick="filterCategory('ulusal')" id="cat-ulusal" class="category-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">Ulusal</button>
                 </div>
@@ -86,12 +92,14 @@
         
         <!-- Video Player & Info Section (2 Columns) -->
         <div class="lg:col-span-2 flex flex-col gap-4">
-            <div class="bg-black rounded-2xl overflow-hidden shadow-2xl aspect-video relative flex items-center justify-center border border-slate-800/80 group">
+            <div class="bg-black rounded-2xl overflow-hidden shadow-2xl aspect-video relative flex items-center justify-center 
+border border-slate-800/80 group">
                 <video id="videoPlayer" controls autoplay playsinline class="w-full h-full object-contain bg-black"></video>
                 
                 <!-- Placeholder when no channel is selected -->
                 <div id="playerPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-b from-slate-900/95 to-slate-950/95 backdrop-blur-sm z-10">
-                    <div class="w-16 h-16 rounded-2xl bg-red-600/10 border border-red-500/20 text-red-500 flex items-center justify-center text-2xl mb-4 animate-pulse shadow-lg shadow-red-600/10">
+                    <div class="w-16 h-16 rounded-2xl bg-red-600/10 border border-red-500/20 text-red-500 flex 
+items-center justify-center text-2xl mb-4 animate-pulse shadow-lg shadow-red-600/10">
                         <i class="fa-solid fa-play"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-100 mb-1">Yayın Seçilmedi</h3>
@@ -106,13 +114,15 @@
             </div>
 
             <!-- Active Channel Details Card -->
-            <div class="bg-darkcard border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="bg-darkcard 
+border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div id="activeChannelLogoBox" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl text-slate-400 shrink-0 overflow-hidden shadow">
                         <i class="fa-solid fa-tv"></i>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex 
+items-center gap-2">
                             <h2 id="currentChannelName" class="text-lg font-bold text-white">Kanal Seçilmedi</h2>
                             <span id="liveBadge" class="hidden bg-red-500/20 border border-red-500/40 text-red-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full tracking-wider animate-pulse">CANLI</span>
                         </div>
@@ -123,40 +133,46 @@
                     <button onclick="toggleFullscreen()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-slate-700/80">
                         <i class="fa-solid fa-expand">}</i> Tam Ekran
                     </button>
-                    <button onclick="reloadStream()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-slate-700/80" title="Yayını Yenile">
+                    <button onclick="reloadStream()" 
+class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border border-slate-700/80" title="Yayını Yenile">
                         <i class="fa-solid fa-rotate-right"></i> Yenile
                     </button>
                 </div>
             </div>
 
             <!-- Notice / Info box -->
-            <div class="bg-gradient-to-r from-red-950/20 to-slate-900 border border-red-900/30 rounded-xl p-4 text-xs text-slate-400 flex items-start gap-3">
+            <div class="bg-gradient-to-r from-red-950/20 to-slate-900 border border-red-900/30 rounded-xl p-4 text-xs text-slate-400 flex items-start 
+gap-3">
                 <i class="fa-solid fa-circle-info text-red-400 text-base shrink-0 mt-0.5"></i>
                 <p>Uygulama Türkiye'deki açık kaynaklı IPTV veri tabanlarını kullanarak kesintisiz bağlantı sağlar. Bazı yerel kanalların yayın saatleri dışında veya altyapı çalışmalarında sinyal vermemesi normaldir.</p>
             </div>
         </div>
 
         <!-- Channel List Section (1 Column) -->
-        <div id="channelSection" class="bg-darkcard border border-slate-800/80 rounded-2xl p-4 flex flex-col h-[650px] shadow-2xl">
+        <div id="channelSection" class="bg-darkcard border 
+border-slate-800/80 rounded-2xl p-4 flex flex-col h-[650px] shadow-2xl">
             <div class="flex justify-between items-center mb-3 pb-3 border-b border-slate-800">
                 <div class="flex items-center gap-2">
                     <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
                         <i class="fa-solid fa-list text-red-500"></i> Kanal Listesi
                     </h3>
                 </div>
-                <span id="channelCount" class="text-xs bg-slate-800 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-full font-medium">Yükleniyor...</span>
+                <span id="channelCount" class="text-xs bg-slate-800 border border-slate-700/60 text-slate-300 
+px-2.5 py-1 rounded-full font-medium">Yükleniyor...</span>
             </div>
 
             <!-- Mobile Category Filter -->
             <div class="flex sm:hidden bg-slate-900 border border-slate-700/80 rounded-xl p-1 mb-3 shrink-0">
                 <button onclick="filterCategory('all')" class="mobile-cat-btn flex-1 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white transition">Tümü</button>
-                <button onclick="filterCategory('yerel')" class="mobile-cat-btn flex-1 py-1 rounded-lg text-xs font-medium text-slate-400 transition">Yerel</button>
+                <button onclick="filterCategory('yerel')" class="mobile-cat-btn flex-1 py-1 
+rounded-lg text-xs font-medium text-slate-400 transition">Yerel</button>
                 <button onclick="filterCategory('ulusal')" class="mobile-cat-btn flex-1 py-1 rounded-lg text-xs font-medium text-slate-400 transition">Ulusal</button>
             </div>
 
             <!-- Channel Items Container -->
             <div id="channelList" class="overflow-y-auto flex-1 space-y-2 pr-1 custom-scrollbar">
-                <div class="flex flex-col items-center justify-center h-48 text-slate-500 text-center gap-3">
+                <div class="flex flex-col items-center justify-center h-48 
+text-slate-500 text-center gap-3">
                     <div class="w-8 h-8 border-3 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                     <p class="text-xs">Kanallar ve yayın adresleri yükleniyor...</p>
                 </div>
@@ -187,7 +203,8 @@
                 console.error("IPTV listesi yüklenemedi:", error);
                 // Fallback mock or error display
                 document.getElementById('channelList').innerHTML = `
-                    <div class="text-center p-6 text-red-400 text-xs bg-red-950/20 rounded-xl border border-red-900/30 my-4">
+                    <div class="text-center 
+p-6 text-red-400 text-xs bg-red-950/20 rounded-xl border border-red-900/30 my-4">
                         <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
                         <p class="font-bold">Kanallar yüklenirken bir ağ hatası oluştu.</p>
                         <p class="text-slate-400 mt-1">Lütfen internet bağlantınızı kontrol edip sayfayı yenileyin.</p>
@@ -207,7 +224,8 @@
                 if (line.startsWith('#EXTINF:')) {
                     currentChannel = {};
                     let tvgLogoMatch = line.match(/tvg-logo="([^"]*)"/);
-                    let groupMatch = line.match(/group-title="([^"]*)"/);
+                    let groupMatch = 
+line.match(/group-title="([^"]*)"/);
                     
                     let nameParts = line.split(',');
                     let rawName = nameParts[nameParts.length - 1].trim();
@@ -220,7 +238,8 @@
                     const localKeywords = ['tv', 'yerel', 'bursa', 'aksu', 'çay', 'konya', 'ankara', 'izmir', 'antalya', 'trabzon', 'gaziantep', 'adana', 'kayseri', 'ordu', 'denizli', 'samsun', 'sakarya', 'eskişehir', 'malatya', 'erzurum', 'mersin', 'van', 'diyarbakır', 'manisa', 'balıkesir', 'kahramanmaraş', 'aydın', 'tekirdağ', 'muğla', 'hatay', 'tek Rumeli', 'kackar', 'as tv', 'tv52', 'kocaeli', 'bengüntv', 'kurtuluş'];
                     
                     let isLocal = false;
-                    const lowerName = rawName.toLowerCase();
+                    const lowerName = 
+rawName.toLowerCase();
                     if (group.includes('local') || group.includes('yerel') || group.includes('regional')) {
                         isLocal = true;
                     } else {
@@ -250,14 +269,16 @@
             
             // Update desktop button styles
             document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.className = 'category-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition';
+                btn.className = 'category-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white 
+transition';
             });
             const activeBtn = document.getElementById(`cat-${cat}`);
             if(activeBtn) activeBtn.className = 'category-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white transition shadow';
 
             // Update mobile button styles
             document.querySelectorAll('.mobile-cat-btn').forEach(btn => {
-                btn.className = 'mobile-cat-btn flex-1 py-1 rounded-lg text-xs font-medium text-slate-400 transition';
+                btn.className = 'mobile-cat-btn flex-1 py-1 
+rounded-lg text-xs font-medium text-slate-400 transition';
             });
             // Match mobile buttons
             document.querySelectorAll('.mobile-cat-btn').forEach(btn => {
@@ -276,7 +297,8 @@
             currentFilteredChannels = allChannels.filter(channel => {
                 const matchesSearch = channel.name.toLowerCase().includes(query);
                 if (activeCategory === 'all') return matchesSearch;
-                return matchesSearch && channel.type === activeCategory;
+                return matchesSearch && 
+channel.type === activeCategory;
             });
 
             renderChannels(currentFilteredChannels);
@@ -286,7 +308,8 @@
         function renderChannels(channels) {
             const container = document.getElementById('channelList');
             container.innerHTML = '';
-            document.getElementById('channelCount').innerText = `${channels.length} Kanal`;
+            document.getElementById('channelCount').innerText = 
+`${channels.length} Kanal`;
 
             if (channels.length === 0) {
                 container.innerHTML = `
@@ -295,7 +318,8 @@
                         <p class="text-sm font-medium text-slate-300">Aradığınız kriterlere uygun kanal bulunamadı.</p>
                         <p class="text-xs">Farklı bir arama terimi deneyebilirsiniz.</p>
                     </div>`;
-                return;
+                
+return;
             }
 
             channels.forEach((channel) => {
@@ -305,6 +329,7 @@
                 item.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer transition border group ${
                     isSelected 
                         ? 'bg-red-600/10 border-red-500/50 shadow-md' 
+
                         : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800/80 hover:border-slate-700'
                 }`;
                 
@@ -313,7 +338,8 @@
                     : 'bg-blue-500/10 text-blue-400 border-blue-500/20';
 
                 let logoHtml = channel.logo 
-                    ? `<img src="${channel.logo}" class="w-full h-full object-contain rounded-lg" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fa-solid fa-tv text-xs\"></i>';">`
+                    ? `<img src="${channel.logo}" class="w-full h-full object-contain rounded-lg" 
+onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fa-solid fa-tv text-xs\"></i>';">`
                     : `<i class="fa-solid fa-tv text-xs"></i>`;
 
                 item.innerHTML = `
@@ -327,7 +353,8 @@
                         </div>
                     </div>
                     <div class="shrink-0 pl-2">
-                        <span class="text-xs px-2.5 py-1 rounded-lg font-medium ${isSelected ? 'bg-red-600 text-white shadow' : 'bg-slate-800 text-slate-300 group-hover:bg-red-600 group-hover:text-white transition'}">
+                        <span class="text-xs 
+px-2.5 py-1 rounded-lg font-medium ${isSelected ? 'bg-red-600 text-white shadow' : 'bg-slate-800 text-slate-300 group-hover:bg-red-600 group-hover:text-white transition'}">
                             ${isSelected ? 'Oynatılıyor' : 'İzle'}
                         </span>
                     </div>
@@ -344,14 +371,16 @@
             const placeholder = document.getElementById('playerPlaceholder');
             const loading = document.getElementById('playerLoading');
             
-            document.getElementById('currentChannelName').innerText = channel.name;
+            document.getElementById('currentChannelName').innerText = 
+channel.name;
             document.getElementById('currentChannelCategory').innerText = `Kategori: ${channel.type.toUpperCase()} • ${channel.group}`;
             document.getElementById('liveBadge').classList.remove('hidden');
             
             // Update logo in header card
             const logoBox = document.getElementById('activeChannelLogoBox');
             if (channel.logo) {
-                logoBox.innerHTML = `<img src="${channel.logo}" class="w-full h-full object-contain rounded-xl" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fa-solid fa-tv\"></i>';">`;
+                logoBox.innerHTML = `<img src="${channel.logo}" class="w-full h-full object-contain 
+rounded-xl" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fa-solid fa-tv\"></i>';">`;
             } else {
                 logoBox.innerHTML = `<i class="fa-solid fa-tv"></i>`;
             }
@@ -360,7 +389,8 @@
             loading.classList.remove('hidden');
 
             // Re-render channel list to highlight active channel
-            renderChannels(currentFilteredChannels);
+            
+renderChannels(currentFilteredChannels);
 
             // Handle HLS stream (.m3u8) or standard HTML5 video
             if (Hls.isSupported()) {
@@ -374,7 +404,8 @@
                 hls.loadSource(channel.url);
                 hls.attachMedia(video);
                 
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                
+hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     loading.classList.add('hidden');
                     video.play().catch(e => console.log("Otomatik oynatma engellendi:", e));
                 });
@@ -385,7 +416,8 @@
                         loading.classList.add('hidden');
                     }
                 });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            } else if 
+(video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = channel.url;
                 video.addEventListener('loadedmetadata', () => {
                     loading.classList.add('hidden');
@@ -397,7 +429,8 @@
             }
         }
 
-        // Reload current stream
+        // Reload current 
+stream
         function reloadStream() {
             if (currentPlayingChannel) {
                 playChannel(currentPlayingChannel);
@@ -410,7 +443,8 @@
             if (video.requestFullscreen) {
                 video.requestFullscreen();
             } else if (video.webkitRequestFullscreen) {
-                video.webkitRequestFullscreen();
+                
+video.webkitRequestFullscreen();
             }
         }
 
@@ -421,7 +455,8 @@
 
         // Mobile channel list toggle button handler
         document.getElementById('mobileToggle').addEventListener('click', () => {
-            const channelSection = document.getElementById('channelSection');
+            const channelSection = 
+document.getElementById('channelSection');
             channelSection.scrollIntoView({ behavior: 'smooth' });
         });
 
