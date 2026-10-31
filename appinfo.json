@@ -1,0 +1,12 @@
+{
+  "id": "com.canlitv.webos",
+  "version": "1.0.0",
+  "vendor": "Fikret",
+  "type": "web",
+  "main": "index.html",
+  "title": "Canlı TV Portalı",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "bgColor": "#0f172a",
+  "resolution": "1920x1080"
+}
