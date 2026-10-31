@@ -17,7 +17,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        # cache: 'npm' satırı kaldırıldı (lock dosyası zorunluluğunu aşmak için)
 
     - name: Install Dependencies
       run: npm install
@@ -35,7 +34,7 @@ jobs:
 
     - name: Initialize Capacitor Android
       run: |
-        npx cap init "Türkiye Canlı TV" "com.canlitv.app" --web-dir www --yes
+        npx cap init "Türkiye Canlı TV" "com.canlitv.app" --web-dir www
         npx cap add android
         npx cap sync android
 
